@@ -1,93 +1,289 @@
-# RDPP Defect Detection Tool
+# Revisiting Reverse Distillation – Extended and refactored Implementation
+
+This repository builds upon the official RD++ implementation released with the CVPR 2023 paper
+“Revisiting Reverse Distillation for Anomaly Detection.”
+
+The original project structure has been **refactored and extended** to improve maintainability, configurability and output analysis.
+
+[![Paper](https://img.shields.io/badge/Paper-<COLOR>.svg)](https://openaccess.thecvf.com/content/CVPR2023/papers/Tien_Revisiting_Reverse_Distillation_for_Anomaly_Detection_CVPR_2023_paper.pdf)
+
+[![Original Code](https://img.shields.io/badge/Code-GitHub-blue.svg)](https://github.com/tientrandinh/Revisiting-Reverse-Distillation)
 
 
+## Features
 
-## Getting started
+* Unsupervised anomaly detection using Revisiting Reverse Distillation
+* Training on normal samples only
+* Unified CLI with YAML-based configuration
+* Image-level predictions and confusion case analysis
+* Pixel-level heatmaps, binary mask overlays and LabelMe-compatible polygon annotations
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Demo
 
-## Add your files
+Example results on shearography images showing pixel-level anomaly detection outputs. Image rights: Plassmann et al., https://zenodo.org/records/17631257
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+<table>
+  <tr>
+    <td align="left" style="padding-right:40px;">
+      <img src="assets/input.png" width="225"><br>
+      <b>Input</b>
+    </td>
+    <td align="left" style="padding-right:40px;">
+      <img src="assets/heatmap.png" width="225"><br>
+      <b>Heatmap</b>
+    </td>
+    <td align="left" style="padding-right:40px;">
+      <img src="assets/mask.png" width="225"><br>
+      <b>Binary Mask</b>
+    </td>
+    <td align="left">
+      <img src="assets/polygon.png" width="225"><br>
+      <b>Polygon Annotation</b>
+    </td>
+  </tr>
+</table>
 
-```
-cd existing_repo
-git remote add origin https://gitlab.rlp.net/hst_bachelorarbeit/rdpp_defect_detection_tool.git
-git branch -M main
-git push -uf origin main
-```
 
-## Integrate with your tools
+## Table of Contents
 
-* [Set up project integrations](https://gitlab.rlp.net/hst_bachelorarbeit/rdpp_defect_detection_tool/-/settings/integrations)
+* [Installation](#installation)
+* [Project Structure](#project-structure)
+* [Dataset Structure](#dataset-structure)
+* [Configuration](#configuration)
+* [CLI Usage](#cli-usage)
+* [Tech Stack](#tech-stack)
+* [License](#license)
 
-## Collaborate with your team
-
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Requirements
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- Python 3.10 or newer (tested with Python 3.10.12 and Python 3.12)
+- `pip` and `venv`
+- Recommended: CUDA-enabled GPU (>4 GB VRAM for larger backbones; 
+  tested on NVIDIA Quadro P2000 Mobile and RTX 3060 Ti)
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### Create and activate a virtual environment
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+```bash
+python3 -m venv rdpp_venv
+source rdpp_venv/bin/activate
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+
+### Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+
+## Project Structure
+
+```text
+rdpp/
+├── src/
+│   ├── scripts/          # CLI entry points
+│   │   ├── train.py      # Starts the training pipeline, trains the model and saves a checkpoint
+│   │   ├── test.py       # Loads a trained checkpoint and evaluates the model using ground truth
+│   │   └── deploy.py     # Loads a trained checkpoint and applies the model to new data without ground truth
+│   ├── training/         # Training pipeline
+│   ├── testing/          # Testing pipeline
+│   ├── deployment/       # Deployment pipeline
+│   ├── inference/        # Inference and anomaly maps
+│   ├── evaluation/       # Evaluation metrics
+│   ├── postprocessing/   # Image- and pixel-level output processing
+│   ├── data/             # Dataset handling
+│   └── utils/            # Shared utilities
+├── configs/              # YAML configurations
+├── datasets/             # Datasets
+├── output/               # Generated outputs from training, testing, and deployment runs
+├── assets/               # Demo images used in the README
+├── requirements.txt
+└── README.md
+```
+
+
+## Dataset Structure
+
+Datasets are stored in datasets/ and follow a standard anomaly detection layout
+with separate train, test, and ground_truth directories. Training is performed
+using normal samples only.
+
+Ground-truth annotations are provided as binary masks (white = anomaly, black = normal)
+and must share the same filenames as their corresponding faulty test images. The
+faulty/ and ground_truth/ directories may contain defect-specific subfolders.
+
+If annotations are available in LabelMe format (JSON), they can be converted into
+binary masks using the labelme_to_mask.py script located in the scripts/ directory.
+
+Depending on the execution mode (training, testing, or deployment), different parts
+of the dataset are required:
+
+* **Training:** train, test and ground-truth data
+* **Testing:** test and ground-truth data
+* **Deployment:** test data only
+
+
+### Example Dataset Directory Structure
+```text
+datasets/
+  └── <category_name>/
+      ├── train/
+      │   └── good/
+      ├── test/
+      │   ├── good/
+      │   └── faulty/
+      │       ├── <defect_type_1>/  (optional)
+      │       ├── ...
+      │       └── <defect_type_n>/  (optional)
+      └── ground_truth/
+          └── faulty/
+              ├── <defect_type_1>/  (optional)
+              ├── ...
+              └── <defect_type_n>/  (optional)
+```
+
+
+### Sample Images and Ground-Truth Masks
+Representative samples of normal images, faulty images, and corresponding
+ground-truth masks. Image rights: Tenta Vision GmbH
+
+<table>
+  <tr>
+    <td align="left" style="padding-right:5px;">
+      <img src="assets/good.png" width="220" height="130"><br>
+      <b>Normal Image (Good)</b>
+    </td>
+    <td align="left" style="padding-right:5px;">
+      <img src="assets/faulty.png" width="220" height="130"><br>
+      <b>Faulty Image</b>
+    </td>
+    <td align="left">
+      <img src="assets/gt.png" width="220" height="130"><br>
+      <b>Ground-Truth Mask</b>
+    </td>
+  </tr>
+</table>
+
+
+## Configuration
+
+All pipelines are configured via YAML files in `configs/`, which should be
+reviewed and adapted before running training, testing or deployment.
+Command-line arguments override the corresponding YAML settings.
+
+Separate YAML configuration files are used for training, testing, and deployment:
+
+* `config_training.yaml`
+* `config_testing.yaml`
+* `config_deployment.yaml`
+
+
+## CLI Usage
+
+All scripts are executed as Python modules.
+
+
+### Training
+
+Executes the training pipeline on normal samples of a dataset category.
+
+```bash
+python3 -m src.scripts.train
+```
+
+**Arguments:**
+
+* `--dataset <DATASET_PATH>`  
+  Override dataset path (e.g. `./datasets/shearography`)
+
+* `--config <CONFIG>`
+  Override training config filename (relative to `configs/`, e.g. `config_training.yaml`)
+
+* `--batch_size <BATCH_SIZE>`  
+  Override training batch size
+
+* `--epochs <EPOCHS>`  
+  Override number of training epochs
+
+* `--save_folder <SAVE_FOLDER_PATH>`  
+  Override output directory for training results (e.g. `./output` or `/home/user/experiments`)
+
+
+### Testing
+
+Executes the evaluation pipeline on unseen data of a dataset category
+with ground-truth annotations using a trained model.
+
+```bash
+python3 -m src.scripts.test
+```
+
+**Arguments:**
+
+* `--dataset <DATASET_PATH>`  
+  Override dataset path (e.g. `./datasets/shearography`)
+
+* `--config <CONFIG>`  
+  Override testing config filename (relative to `configs/`, e.g. `config_testing.yaml`)
+
+* `--checkpoint_path <CHECKPOINT_PATH>`  
+  Override path to trained model checkpoint (e.g. `./output/training/2026-03-30_16-00-21/shearography/best_model_resnet34_shearography.pth`)
+
+* `--save_folder <SAVE_FOLDER_PATH>`  
+  Override output directory for testing results (e.g. `./output` or `/home/user/experiments`)
+  
+
+### Deployment
+
+Executes the inference pipeline on unseen data of a dataset category without
+ground-truth annotations using a trained model.
+This pipeline is intended for real-world deployment settings.
+
+```bash
+python3 -m src.scripts.deploy
+```
+
+**Arguments:**
+
+* `--dataset <DATASET_PATH>`  
+  Override dataset path for deployment (e.g. `./datasets/shearography`)
+
+* `--config <CONFIG>`  
+  Override deployment config filename (relative to `configs/`, e.g. `config_deployment.yaml`)
+
+* `--checkpoint_path <CHECKPOINT_PATH>`  
+  Override path to trained model checkpoint (e.g. `./output/.../best_model_resnet34_shearography.pth`)
+
+* `--save_folder <SAVE_FOLDER_PATH>`  
+  Override output directory for deployment results (e.g. `./output` or `/home/user/experiments`)
+
+
+### Help
+
+Each script provides a detailed help message:
+
+```bash
+python3 -m src.scripts.<script_name> --help
+```
+
+## Threshold Tuning
+
+Image- and pixel-level results depend on the configured thresholds.
+
+Key parameters:
+- `image_threshold`, `image_quantile` (image-level prediction)
+- `pixel_threshold`, `min_region_area` (pixel-level output)
+
+These values are dataset-dependent and may need adjustment for optimal results.
+
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project follows the license of the original RDPP implementation.
+See the `LICENSE` file for details.

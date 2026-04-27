@@ -1,0 +1,46 @@
+# --------------------------------------------------
+# Configuration for deployment
+# --------------------------------------------------
+
+project:
+  device: cuda                   # Use "cuda" for GPU, or "cpu" for CPU
+
+paths:
+  dataset: ./datasets/shearography_testA
+  output_root: ./output
+  checkpoint_path: ./output/training/2026-04-05_15-55-22/shearography_val/best_model_resnet34_shearography_val.pth
+
+model:
+  backbone: resnet34            # Selected backbone model. The backbone must match the one used during training of the checkpoint!
+
+  backbones:                    # Available backbone architectures (VRAM requirements depend on the backbone)
+    resnet18:
+      base: 16                  # Base channel width; controls model width (higher = more channels)
+    resnet34:
+      base: 16
+    resnet50:
+      base: 64
+    wide_resnet50_2:
+      base: 64
+
+thresholds:
+  image_quantile: 0.99          # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
+  image_threshold: 0.875        # Threshold applied to the image-level anomaly score for classification
+
+  pixel_threshold: 0.85         # Pixel is considered anomalous above this score
+  min_region_area: 7500         # Removes connected regions smaller than this area (noise filtering)
+  
+polygon:
+  polygon_epsilon_ratio: 0.004   # Controls polygon simplification (higher = fewer points, larger spacing)
+
+morphology:
+  enabled: true                 # Enable/disable morphological mask cleanup
+  kernel_size: 3                # Neighborhood size (3×3) used to suppress noise
+  open_iterations: 1            # Strength of noise removal
+  close_iterations: 80          # Strength of hole filling
+
+dataset:
+  image_size: 256 
+
+
+

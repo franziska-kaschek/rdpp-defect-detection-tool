@@ -1,0 +1,61 @@
+# --------------------------------------------------
+# Training configuration
+# --------------------------------------------------
+project:
+  seed: 42
+  device: cuda                    # Use "cuda" for GPU, or "cpu" for CPU
+
+paths:
+  dataset: ./datasets/shearography_val 
+  output_root: ./output
+  checkpoint_name: "best_model_{model}_{dataset}.pth"
+
+model:
+  backbone: resnet34              # Selected backbone model
+  
+  backbones:                      # Available backbone architectures (VRAM requirements depend on the backbone)
+    resnet18:
+      base: 16                    # Base channel width; controls model width (higher = more channels)
+    resnet34:
+      base: 16
+    resnet50:
+      base: 64
+    wide_resnet50_2:
+      base: 64
+
+dataset:
+  image_size: 256
+  
+dataloader:
+  batch_size: 18
+  shuffle_train: true
+
+training:
+  epochs: 1
+  optimizer:
+    proj_lr: 0.001                # Learning rate for projection layers
+    distill_lr: 0.005             # learning rate for distillation (decoder + bn)
+    betas: [0.5, 0.999]           # Adam parameters (used for both projection and distillation optimizers): 
+                                  # beta1 controls momentum (influence of past gradients), beta2 controls update stability
+  loss:
+    weight_proj: 0.2              # Weight of projection loss in total loss
+    ssot_weight: 1.0              # Self-supervised distillation term (main alignment)
+    reconstruct_weight: 0.01      # Reconstruction term (pulls features together)
+    contrast_weight: 0.1          # Contrast term (pushes noisy features away)
+
+  pseudo_anomaly:
+    enabled: true
+    patch:
+      min_size: 10                # Minimum size of injected noise patch (pixels)
+      max_size_divisor: 8         # Max patch size = image_size / divisor
+    simplex:
+      octaves: 6                  # Number of noise layers (controls detail complexity)
+      persistence: 0.6            # Amplitude decay across octaves (smooth vs rough noise)
+      frequency: 32               # Spatial frequency of noise (higher = finer patterns)
+      amplitude: 0.2              # Strength of noise injection (pixel intensity scaling)
+      
+  gradient_accumulation_steps: 2  # Number of batches accumulated before optimizer step
+  plot_interval: 1                # Epoch interval for plotting/logging results
+
+
+

@@ -1,0 +1,4 @@
+Image Credits
+
+- input.png, heatmap.png, mask.png, polygon.png: Plaßmann et al., Zenodo (https://zenodo.org/records/17631257)
+- faulty.png, good.png, gt.png: TentaVision GmbH

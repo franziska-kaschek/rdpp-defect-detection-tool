@@ -1,0 +1,48 @@
+############################
+# Python
+############################
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+############################
+# Virtual environment
+############################
+rdpp_env_cpu/
+rdpp_env_gpu/
+
+############################
+# Datasets
+############################
+datasets/
+!datasets/custom_dataset/
+
+############################
+# Outputs
+############################
+output/
+
+############################
+# Logs / metrics
+############################
+*.log
+metrics*.csv
+
+############################
+# Images from runs
+############################
+*.png
+*.jpg
+*.jpeg
+
+# Exception: keep assets
+!assets/
+!assets/*.png
+!assets/*.jpg
+!assets/*.jpeg
+
+############################
+# Copilot
+############################
+.github/
