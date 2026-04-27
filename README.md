@@ -1,4 +1,4 @@
-# Revisiting Reverse Distillation – Extended and refactored Implementation
+# Revisiting Reverse Distillation – Extended and Refactored Implementation
 
 This repository builds upon the official RD++ implementation released with the CVPR 2023 paper
 “Revisiting Reverse Distillation for Anomaly Detection.”
