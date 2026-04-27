@@ -5,9 +5,7 @@ This repository builds upon the official RD++ implementation released with the C
 
 The original project structure has been **refactored and extended** to improve maintainability, configurability and output analysis.
 
-[![Paper](https://img.shields.io/badge/Paper-<COLOR>.svg)](https://openaccess.thecvf.com/content/CVPR2023/papers/Tien_Revisiting_Reverse_Distillation_for_Anomaly_Detection_CVPR_2023_paper.pdf)
-
-[![Original Code](https://img.shields.io/badge/Code-GitHub-blue.svg)](https://github.com/tientrandinh/Revisiting-Reverse-Distillation)
+[![Paper](https://img.shields.io/badge/Paper-<COLOR>.svg)](https://openaccess.thecvf.com/content/CVPR2023/papers/Tien_Revisiting_Reverse_Distillation_for_Anomaly_Detection_CVPR_2023_paper.pdf) [![Original Code](https://img.shields.io/badge/Code-GitHub-blue.svg)](https://github.com/tientrandinh/Revisiting-Reverse-Distillation)
 
 
 ## Features
@@ -52,7 +50,6 @@ Example results on shearography images showing pixel-level anomaly detection out
 * [Dataset Structure](#dataset-structure)
 * [Configuration](#configuration)
 * [CLI Usage](#cli-usage)
-* [Tech Stack](#tech-stack)
 * [License](#license)
 
 
