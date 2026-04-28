@@ -1,0 +1,56 @@
+{
+  "python_version": "3.10.12 (main, Mar  3 2026, 11:56:32) [GCC 11.4.0]",
+  "torch_version": "1.12.1+cu113",
+  "device": "cuda",
+  "seed": 42,
+  "run": {
+    "dataset": "shearography_val"
+  },
+  "paths": {
+    "dataset": "./datasets/shearography_val",
+    "output_dir": "./output/training/2026-04-28_17-17-37/shearography_val"
+  },
+  "dataset": {
+    "image_size": 256,
+    "num_train_images": 3750
+  },
+  "model": {
+    "backbone": "resnet34",
+    "base": 16
+  },
+  "dataloader": {
+    "batch_size": 18,
+    "shuffle_train": true
+  },
+  "training": {
+    "epochs": 10,
+    "gradient_accumulation_steps": 2,
+    "optimizer": {
+      "proj_lr": 0.001,
+      "distill_lr": 0.005,
+      "betas": [
+        0.5,
+        0.999
+      ]
+    },
+    "loss": {
+      "weight_proj": 0.2,
+      "ssot_weight": 1.0,
+      "reconstruct_weight": 0.01,
+      "contrast_weight": 0.1
+    },
+    "pseudo_anomaly": {
+      "enabled": true,
+      "patch": {
+        "min_size": 10,
+        "max_size_divisor": 8
+      },
+      "simplex": {
+        "octaves": 6,
+        "persistence": 0.6,
+        "frequency": 32,
+        "amplitude": 0.2
+      }
+    }
+  }
+}
