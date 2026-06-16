@@ -41,8 +41,3 @@ metrics*.csv
 !assets/*.png
 !assets/*.jpg
 !assets/*.jpeg
-
-############################
-# Copilot
-############################
-.github/

@@ -6,11 +6,12 @@
 #        pip install -r requirements.txt
 #
 #   3) OPTIONAL: Install PyTorch depending on your hardware:
-#      - CPU:
-#          pip install torch==2.1.2 torchvision==0.16.2
 #
-#      - GPU:
-#          pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu118
+#      - CPU (recommended if you do not have an NVIDIA GPU):
+#          pip install torch==1.12.1 torchvision==0.13.1
+#
+#      - GPU (recommended if you have an NVIDIA GPU with CUDA 11.8 support):
+#          pip install torch==1.12.1 torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu113
 # ============================================================
 
 geomloss==0.2.6
