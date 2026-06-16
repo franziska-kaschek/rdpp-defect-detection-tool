@@ -8,7 +8,7 @@ project:
 paths:
   dataset: ./datasets/shearography_testA
   output_root: ./output
-  checkpoint_path: ./output/training/2026-04-05_15-55-22/shearography_val/best_model_resnet34_shearography_val.pth
+  checkpoint_path: ./output/best_model_resnet34_shearography_val.pth
 
 model:
   backbone: resnet34            # Selected backbone model. The backbone must match the one used during training of the checkpoint!
