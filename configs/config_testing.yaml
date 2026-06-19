@@ -26,10 +26,10 @@ model:
 
 thresholds:
   image_quantile: 0.99          # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
-  image_threshold: 0.875        # Threshold applied to the image-level anomaly score for classification
+  image_threshold: 0.55        # Threshold applied to the image-level anomaly score for classification
 
-  pixel_threshold: 0.85         # Pixel is considered anomalous above this score
-  min_region_area: 7500         # Removes connected regions smaller than this area (noise filtering)
+  pixel_threshold: 0.6         # Pixel is considered anomalous above this score
+  min_region_area: 6500         # Removes connected regions smaller than this area (noise filtering)
 
 polygon:
   polygon_epsilon_ratio: 0.004  # Controls polygon simplification (higher = fewer points, larger spacing)

@@ -1,17 +1,25 @@
 # Project: RDPP (Revisiting Reverse Distillation)
 #
-# Installation:
-#   1) Activate the virtual environment
-#   2) Install base dependencies:
-#        pip install -r requirements.txt
+# Installation
 #
-#   3) OPTIONAL: Install PyTorch depending on your hardware:
+# 1) Create and activate a virtual environment
 #
-#      - CPU (recommended if you do not have an NVIDIA GPU):
-#          pip install torch==1.12.1 torchvision==0.13.1
+# 2) Install the project dependencies:
+# pip install -r requirements.txt
 #
-#      - GPU (recommended if you have an NVIDIA GPU with CUDA 11.8 support):
-#          pip install torch==1.12.1 torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu113
+# 3) Install PyTorch separately depending on your hardware:
+#
+# CPU-only:
+# pip install torch==1.12.1 torchvision==0.13.1
+#
+# NVIDIA GPU (CUDA 11.3):
+# pip install torch==1.12.1 torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu113
+#
+# Tested with:
+# torch==1.12.1
+# torchvision==0.13.1
+# CUDA 11.3
+#
 # ============================================================
 
 geomloss==0.2.6
