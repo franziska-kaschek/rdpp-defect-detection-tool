@@ -54,14 +54,12 @@ Example results on shearography images showing pixel-level anomaly detection out
 
 ## Installation
 
-
 ### Requirements
 
 - Python 3.10 or newer (tested with Python 3.10.12 and Python 3.12)
 - `pip` and `venv`
 - Recommended: CUDA-enabled GPU (>4 GB VRAM for larger backbones; 
   tested on NVIDIA Quadro P2000 Mobile and RTX 3060 Ti)
-
 
 ### Create and activate a virtual environment
 
@@ -70,32 +68,12 @@ python3 -m venv rdpp_venv
 source rdpp_venv/bin/activate
 ```
 
-
 ### Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
-### Install PyTorch
 
-PyTorch is not included in `requirements.txt` and must be installed separately.
-
-**CPU-only:**
-
-```bash
-pip install torch==1.12.1 torchvision==0.13.1
-```
-
-**NVIDIA GPU (CUDA 11.3):**
-
-```bash
-pip install torch==1.12.1 torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu113
-```
-
-Tested with:
-- torch 1.12.1
-- torchvision 0.13.1
-- CUDA 11.3
 
 ## Project Structure
 
@@ -143,7 +121,6 @@ of the dataset are required:
 * **Testing:** test and ground-truth data
 * **Deployment:** test data only
 
-
 ### Example Dataset Directory Structure
 ```text
 datasets/
@@ -162,7 +139,6 @@ datasets/
               ├── ...
               └── <defect_type_n>/  (optional)
 ```
-
 
 ### Sample Images and Ground-Truth Masks
 Representative samples of normal images, faulty images and corresponding
@@ -203,7 +179,6 @@ Separate YAML configuration files are used for training, testing, and deployment
 
 All scripts are executed as Python modules.
 
-
 ### Training
 
 Executes the training pipeline on normal samples of a dataset category.
@@ -229,7 +204,6 @@ python3 -m src.scripts.train
 * `--save_folder <SAVE_FOLDER_PATH>`  
   Override output directory for training results (e.g. `./output` or `/home/user/experiments`)
 
-
 ### Testing
 
 Executes the evaluation pipeline on unseen data of a dataset category
@@ -253,7 +227,6 @@ python3 -m src.scripts.test
 * `--save_folder <SAVE_FOLDER_PATH>`  
   Override output directory for testing results (e.g. `./output` or `/home/user/experiments`)
   
-
 ### Deployment
 
 Executes the inference pipeline on unseen data of a dataset category without
@@ -278,7 +251,6 @@ python3 -m src.scripts.deploy
 * `--save_folder <SAVE_FOLDER_PATH>`  
   Override output directory for deployment results (e.g. `./output` or `/home/user/experiments`)
 
-
 ### Help
 
 Each script provides a detailed help message:
@@ -286,6 +258,7 @@ Each script provides a detailed help message:
 ```bash
 python3 -m src.scripts.<script_name> --help
 ```
+
 
 ## Threshold Tuning
 
