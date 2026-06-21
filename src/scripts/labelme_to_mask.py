@@ -8,6 +8,9 @@ Example:
     python3 -m src.scripts.labelme_to_mask \
         --input datasets/labelme_labels \
         --output datasets/ground_truth
+Note:
+    Only "polygon" and "rectangle" shapes are supported.
+    All other shapes (circle, line, point, etc.) are ignored.
 """
 
 import json
@@ -17,41 +20,43 @@ from PIL import Image, ImageDraw
 from tqdm import tqdm
 
 
-def create_mask(data):
+def create_mask(data, json_file=None):
     """
     Create a binary mask from LabelMe JSON data.
     All annotated regions are filled with value 255 (foreground).
     """
-    # Create empty grayscale mask (0 = background)
     mask = Image.new("L", (data["imageWidth"], data["imageHeight"]), 0)
     draw = ImageDraw.Draw(mask)
 
-    # Draw all annotated shapes
     for shape in data.get("shapes", []):
         points = shape.get("points", [])
         shape_type = shape.get("shape_type", "polygon")
 
-        # Skip invalid annotations
         if not points:
+            print(f"Empty points in {json_file}")
             continue
 
-        # Rectangle defined by two corner points
+        # Rectangle
         if shape_type == "rectangle" and len(points) >= 2:
             (x1, y1), (x2, y2) = points[:2]
-            draw.rectangle([round(x1), round(y1), round(x2), round(y2)], fill=255)
+            draw.rectangle(
+                [round(x1), round(y1), round(x2), round(y2)],
+                fill=255
+            )
 
-        # Polygon defined by at least three points
+        # Polygon
         elif shape_type == "polygon" and len(points) >= 3:
             polygon_points = [(round(x), round(y)) for x, y in points]
             draw.polygon(polygon_points, fill=255)
 
-        # Ignore unsupported shape types
         else:
+            print(f"Unsupported shape type '{shape_type}' in {json_file}")
             continue
 
     return mask
 
 
+# Entry point: runs main() only when script is executed directly
 def process_file(json_file, output_dir):
     """
     Load a JSON file, generate its mask, and save it as PNG.
