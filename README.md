@@ -74,6 +74,27 @@ source rdpp_venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Install PyTorch
+
+PyTorch is not included in `requirements.txt` and must be installed separately.
+
+**CPU-only:**
+
+```bash
+pip install torch==1.12.1 torchvision==0.13.1
+```
+
+**NVIDIA GPU (CUDA 11.3):**
+
+```bash
+pip install torch==1.12.1 torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu113
+```
+
+Tested with:
+- torch 1.12.1
+- torchvision 0.13.1
+- CUDA 11.3
+
 
 ## Project Structure
 
