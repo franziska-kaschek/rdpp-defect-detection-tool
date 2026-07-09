@@ -97,13 +97,15 @@ def compute_pro_auc(masks: ndarray, amaps: ndarray, num_th: int = 200) -> None:
         records["fpr"].append(fpr)
         records["threshold"].append(th)
 
-    # Restrict evaluation to low-FPR regime and normalize    
+    # Restrict evaluation to low-FPR regime
     df = pd.DataFrame(records)
-    df = df[df["fpr"] < 0.3]
-    df["fpr"] = df["fpr"] / df["fpr"].max()
+    df = df[df["fpr"] <= 0.3]
 
-    pro_auc = auc(df["fpr"], df["pro"])
-    return pro_auc
+    # Compute AUPRO by integrating the PRO curve up to FPR=0.3 and normalizing by the integration limit
+    alpha = 0.3
+    pro_auc = auc(df["fpr"], df["pro"]) / alpha
+
+    return pro_auc  
 
 
 def compute_mean_pro_auc(pro_auc_scores):
