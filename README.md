@@ -294,21 +294,9 @@ These values are dataset-dependent and may need adjustment for optimal results.
 
 ## License
 
-## License
-
 This repository contains components distributed under different licenses:
 
 - Original project code is licensed under the MIT License.
 - The included AUPRO evaluation components derived from the MVTec AD evaluation project are licensed under the BSD 3-Clause License.
 
 The complete license texts are provided in `LICENSE.txt`.
-
-
-This project follows the license of the original RDPP implementation.
-See the `LICENSE` file for details.
-
-## Third-Party Components
-
-This repository includes portions of the AUPRO evaluation code derived from the MVTec AD evaluation project, licensed under the BSD 3-Clause License.
-
-The full license text is provided in mvtec_bsd_license.txt. https://www.mvtec.com/research-teaching/datasets/mvtec-ad
