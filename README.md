@@ -299,4 +299,4 @@ This repository contains components distributed under different licenses:
 - Original project code is licensed under the MIT License.
 - The included AUPRO evaluation components derived from the MVTec AD evaluation project are licensed under the BSD 3-Clause License.
 
-The complete license texts are provided in `LICENSE.txt`.
+The complete license texts are provided in `THIRD_PARTY_LICENSES.txt`.
