@@ -6,7 +6,7 @@ project:
   device: cuda                    # Use "cuda" for GPU, or "cpu" for CPU
 
 paths:
-  dataset: ./datasets/shearography_val 
+  dataset: ./datasets/dataset_val 
   output_root: ./output
   checkpoint_name: "best_model_{model}_{dataset}.pth"
 
@@ -34,14 +34,14 @@ training:
   epochs: 1
   optimizer:
     proj_lr: 0.001                # Learning rate for projection layers
-    distill_lr: 0.005             # learning rate for distillation (decoder + bn)
+    distill_lr: 0.005             # Learning rate for distillation (decoder + bn)
     betas: [0.5, 0.999]           # Adam parameters (used for both projection and distillation optimizers): 
                                   # beta1 controls momentum (influence of past gradients), beta2 controls update stability
   loss:
     weight_proj: 0.2              # Weight of projection loss in total loss
-    ssot_weight: 1.0              # Self-supervised distillation term (main alignment)
-    reconstruct_weight: 0.01      # Reconstruction term (pulls features together)
-    contrast_weight: 0.1          # Contrast term (pushes noisy features away)
+    ssot_weight: 1.0              # SSOT: Compacts normal feature distributions
+    reconstruct_weight: 0.01      # Reconstruction: Aligns normal & pseudo-anomalous features
+    contrast_weight: 0.1          # Contrast: Pushes pseudo-anomalous features away from normal ones
 
   pseudo_anomaly:
     enabled: true
