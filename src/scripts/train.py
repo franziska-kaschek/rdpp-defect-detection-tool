@@ -103,7 +103,7 @@ def main():
     print(f"Backbone        : {train_metadata['model']['backbone']}")
     print("Training running...", end=" ", flush=True)
 
-    result = run_training(dataset_path, train_metadata)
+    result = run_training(train_metadata)
 
     # --------------------------------------------------
     # IO: Training metadata
