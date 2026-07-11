@@ -21,13 +21,13 @@ def plot_training_progress(eval_history, best_epoch, out_dir):
     # --------------------------------------------------
     # AUROC / AUPRO metrics
     # --------------------------------------------------
-    ax[0][0].plot(epochs, eval_history["auroc_px"])
+    ax[0][0].plot(epochs, eval_history["pixel_auroc"])
     ax[0][0].set_title("AUROC (pixel)")
 
-    ax[0][1].plot(epochs, eval_history["auroc_sp"])
+    ax[0][1].plot(epochs, eval_history["image_auroc"])
     ax[0][1].set_title("AUROC (image)")
 
-    ax[0][2].plot(epochs, eval_history["aupro_px"])
+    ax[0][2].plot(epochs, eval_history["aupro"])
     ax[0][2].set_title("AUPRO (pixel)")
 
     # --------------------------------------------------

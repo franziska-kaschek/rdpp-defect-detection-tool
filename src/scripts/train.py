@@ -10,7 +10,6 @@ from src.utils.cli import parse_cli_args
 from src.utils.config import load_yaml_config, override
 from src.utils.reproducibility import setup_seed
 from src.training.training_pipeline import run_training
-from src.evaluation.monitoring_plots import plot_training_progress
 
 
 def main():
@@ -133,15 +132,6 @@ def main():
     # --------------------------------------------------
     df = pd.DataFrame(result["eval_history"])
     df.to_csv(os.path.join(output_dir, "training_history.csv"), index=False)
-
-    # --------------------------------------------------
-    # IO: Plots
-    # --------------------------------------------------
-    plot_training_progress(
-        result["eval_history"],
-        result["best"]["epoch"],
-        output_dir,
-    )
 
     # --------------------------------------------------
     # Print summary to console
