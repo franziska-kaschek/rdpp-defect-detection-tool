@@ -2,6 +2,7 @@ import os
 
 import torch
 from tqdm import tqdm
+import copy
 
 from src.inference.infer_anomaly_maps import infer_anomaly_maps_from_dataset
 from src.evaluation.metrics import compute_ad_metrics
@@ -48,7 +49,7 @@ def run_training(dataset_path, train_metadata):
     loss_cfg = train_metadata["training"]["loss"]
     betas = tuple(optimizer_cfg["betas"])
 
-    checkpoint_state = None
+    best_checkpoint = None
 
     # --------------------------------------------------
     # Dataset & transforms (ground truth available for evaluation)
@@ -265,17 +266,16 @@ def run_training(dataset_path, train_metadata):
                 }
             )
 
-            checkpoint_state = {
+            best_checkpoint = {
                 "backbone": backbone,
-                "proj": proj_layer.state_dict(),
-                "decoder": decoder.state_dict(),
-                "bn": bn.state_dict(),
-                "epoch": epoch,
+                "proj": copy.deepcopy(proj_layer.state_dict()),
+                "decoder": copy.deepcopy(decoder.state_dict()),
+                "bn": copy.deepcopy(bn.state_dict()),
                 "metrics": best,
             }
 
     return {
-        "checkpoint_state": checkpoint_state,
+        "best_checkpoint": best_checkpoint,
         "best": best,
         "eval_history": eval_history,
         "train_metadata": train_metadata,
