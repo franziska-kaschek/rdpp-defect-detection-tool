@@ -120,7 +120,7 @@ def main():
     )
     checkpoint_path = os.path.join(output_dir, checkpoint_name)
 
-    torch.save(result["checkpoint_state"], checkpoint_path)
+    torch.save(result["best_checkpoint"], checkpoint_path)
 
     # --------------------------------------------------
     # IO: Best metrics
