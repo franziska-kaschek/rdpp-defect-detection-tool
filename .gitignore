@@ -11,6 +11,7 @@ __pycache__/
 ############################
 rdpp_env_cpu/
 rdpp_env_gpu/
+rdpp_venv/
 
 ############################
 # Datasets
