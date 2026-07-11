@@ -115,7 +115,6 @@ def main():
     t_start = time.perf_counter()
     
     result = run_deployment(
-        dataset_path=dataset_path,
         deploy_metadata=deploy_metadata,
         output_dir=output_dir,
     )
