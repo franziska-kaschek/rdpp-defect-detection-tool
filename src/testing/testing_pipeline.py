@@ -27,7 +27,7 @@ from src.postprocessing.pixel_level_output import save_pixel_level_outputs
 from src.evaluation.evaluation_plots import plot_roc_and_pro
 
 
-def run_test(dataset_path, test_metadata, output_dir): 
+def run_test(test_metadata, output_dir): 
     """
     Evaluation pipeline with ground truth.
 
@@ -62,7 +62,7 @@ def run_test(dataset_path, test_metadata, output_dir):
 
     image_level_counter = Counter()
     error_counter = Counter()
-    image_scores = [] 
+    image_level_records = [] 
 
     # --------------------------------------------------
     # Dataset & transforms (ground truth available for evaluation)    
@@ -120,7 +120,6 @@ def run_test(dataset_path, test_metadata, output_dir):
     # --------------------------------------------------
     # Switch to evaluation mode
     # --------------------------------------------------
-    # Freeze encoder (feature extractor is not trained)
     encoder.eval()
     proj_layer.eval()
     bn.eval()
@@ -142,13 +141,21 @@ def run_test(dataset_path, test_metadata, output_dir):
     # --------------------------------------------------
     # Evaluation
     # --------------------------------------------------
-    auroc_px, auroc_sp, aupro_px = compute_ad_metrics(
+    gt_pixels, pixel_anomaly_scores, masks, gt_images, image_anomaly_scores = collect_eval_data(
         test_dataloader,
-        anomaly_maps,
+        anomaly_maps
     )
 
-    gt_px, pr_px, masks = collect_eval_data(test_dataloader, anomaly_maps)
-    amaps = np.array(anomaly_maps)
+    amaps = np.asarray(anomaly_maps)
+
+    pixel_auroc, image_auroc, aupro = compute_ad_metrics(
+        gt_pixels,
+        pixel_anomaly_scores,
+        gt_images,
+        image_anomaly_scores,
+        masks,
+        anomaly_maps
+    )
 
     # --------------------------------------------------
     # Pixel-level visualization
@@ -209,13 +216,13 @@ def run_test(dataset_path, test_metadata, output_dir):
             image_quantile=image_quantile,
         )
         
-        image_score = float(np.quantile(amap, image_quantile))
-        image_scores.append({
+        image_quantile_score = float(np.quantile(amap, image_quantile))
+        image_level_records.append({
             "image_name": os.path.basename(img_path),
             "category": category,
             "gt_label": gt_label,
             "predicted_label": pred_label,
-            "anomaly_score": image_score,
+            "anomaly_score": image_quantile_score,
         })
         
         image_level_counter[pred_label] += 1
@@ -233,8 +240,8 @@ def run_test(dataset_path, test_metadata, output_dir):
     # Plots
     # --------------------------------------------------
     plot_roc_and_pro(
-        gt_px,
-        pr_px,
+        gt_pixels,
+        pixel_anomaly_scores,
         masks,
         amaps,
         output_dir,
@@ -246,9 +253,9 @@ def run_test(dataset_path, test_metadata, output_dir):
     # --------------------------------------------------
     summary = {
         "metrics": {
-            "AUROC_sample": auroc_sp,
-            "AUROC_pixel": auroc_px,
-            "AUPRO_pixel": aupro_px,
+            "AUROC_sample": image_auroc,
+            "AUROC_pixel": pixel_auroc,
+            "AUPRO_pixel": aupro,
         },
         "image_level": {
             "predicted_normal": image_level_counter["normal"],
@@ -265,6 +272,6 @@ def run_test(dataset_path, test_metadata, output_dir):
     return {
         "test_metadata": test_metadata,
         "summary": summary,
-        "image_scores": image_scores,
+        "image_level_records": image_level_records,
     }
 

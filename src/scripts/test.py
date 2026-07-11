@@ -119,7 +119,6 @@ def main():
     t_start = time.perf_counter()
 
     result = run_test(
-        dataset_path=dataset_path,
         test_metadata=test_metadata,
         output_dir=output_dir,
     )
@@ -136,7 +135,7 @@ def main():
     # --------------------------------------------------    
     test_metadata = result["test_metadata"]    
     summary = result["summary"]
-    image_scores = result["image_scores"]
+    image_level_records = result["image_level_records"]
     
     num_images = test_metadata["dataset"].get("num_test_images", 0)
     e2e_time = t_end - t_start
@@ -164,9 +163,9 @@ def main():
     # --------------------------------------------------
     # IO: Save image-level scores
     # --------------------------------------------------
-    df = pd.DataFrame(image_scores)
+    df = pd.DataFrame(image_level_records)
     df.to_csv(
-        os.path.join(output_dir, "image_scores.csv"),
+        os.path.join(output_dir, "image_level_records.csv"),
         index=False,
     )
 
