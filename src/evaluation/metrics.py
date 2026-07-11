@@ -1,159 +1,298 @@
-from statistics import mean
-
 import numpy as np
-import pandas as pd
-from numpy import ndarray
-from sklearn.metrics import roc_auc_score, auc
-from skimage import measure
+from sklearn.metrics import roc_auc_score
+from scipy.ndimage import label
+from bisect import bisect
+
+
+def trapezoid(x, y, x_max=None):
+    """
+    Source: https://www.mvtec.com/research-teaching/datasets/mvtec-ad
+    This function calculates the definit integral of a curve given by
+    x- and corresponding y-values. In contrast to, e.g., 'numpy.trapz()',
+    this function allows to define an upper bound to the integration range by
+    setting a value x_max.
+
+    Points that do not have a finite x or y value will be ignored with a
+    warning.
+
+    Args:
+        x: Samples from the domain of the function to integrate
+          Need to be sorted in ascending order. May contain the same value
+          multiple times. In that case, the order of the corresponding
+          y values will affect the integration with the trapezoidal rule.
+        y: Values of the function corresponding to x values.
+        x_max: Upper limit of the integration. The y value at max_x will be
+          determined by interpolating between its neighbors. Must not lie
+          outside of the range of x.
+
+    Returns:
+        Area under the curve.
+    """
+
+    x = np.asarray(x)
+    y = np.asarray(y)
+    finite_mask = np.logical_and(np.isfinite(x), np.isfinite(y))
+    if not finite_mask.all():
+        print("WARNING: Not all x and y values passed to trapezoid(...)"
+              " are finite. Will continue with only the finite values.")
+    x = x[finite_mask]
+    y = y[finite_mask]
+
+    # Introduce a correction term if max_x is not an element of x.
+    correction = 0.
+    if x_max is not None:
+        if x_max not in x:
+            # Get the insertion index that would keep x sorted after
+            # np.insert(x, ins, x_max).
+            ins = bisect(x, x_max)
+            # x_max must be between the minimum and the maximum, so the
+            # insertion_point cannot be zero or len(x).
+            assert 0 < ins < len(x)
+
+            # Calculate the correction term which is the integral between
+            # the last x[ins-1] and x_max. Since we do not know the exact value
+            # of y at x_max, we interpolate between y[ins] and y[ins-1].
+            y_interp = y[ins - 1] + ((y[ins] - y[ins - 1]) *
+                                     (x_max - x[ins - 1]) /
+                                     (x[ins] - x[ins - 1]))
+            correction = 0.5 * (y_interp + y[ins - 1]) * (x_max - x[ins - 1])
+
+        # Cut off at x_max.
+        mask = x <= x_max
+        x = x[mask]
+        y = y[mask]
+
+    # Return area under the curve using the trapezoidal rule.
+    return np.sum(0.5 * (y[1:] + y[:-1]) * (x[1:] - x[:-1])) + correction
+
 
 
 def collect_eval_data(dataloader, anomaly_maps):
     """
-    Collects pixel-wise ground truth, anomaly scores and masks for evaluation.
+    Collects pixel-wise and image-wise ground truth labels, anomaly scores,
+    and ground truth masks for evaluation.
     """
-    gt_list_px = []
-    pr_list_px = []
+    gt_pixels = []
+    pixel_anomaly_scores = []
+
+    gt_images = []
+    image_anomaly_scores = []
+
     masks = []
 
-    for (_, gt, label, _, _), anomaly_map in zip(dataloader, anomaly_maps): 
+    for (_, gt, _, _, _), anomaly_map in zip(dataloader, anomaly_maps):
+
         # Binarize ground truth mask (threshold at 0.5)
         gt[gt > 0.5] = 1
         gt[gt <= 0.5] = 0
 
+        # Convert PyTorch tensor to NumPy array
         gt_np = gt.squeeze().cpu().numpy().astype(int)
 
-        gt_list_px.extend(gt_np.ravel())
-        pr_list_px.extend(anomaly_map.ravel())
+        # Pixel-level data
+        gt_pixels.extend(gt_np.ravel())
+        pixel_anomaly_scores.extend(anomaly_map.ravel())
 
+        # Image-level data
+        gt_images.append(gt_np.max())
+        image_anomaly_scores.append(np.max(anomaly_map))
+
+        # Store ground truth masks for PRO computation
         masks.append(gt_np)
 
     masks = np.stack(masks)
 
-    return gt_list_px, pr_list_px, masks
+    return (
+        gt_pixels,
+        pixel_anomaly_scores,
+        masks,
+        gt_images,
+        image_anomaly_scores,
+    )
 
 
-def compute_pixel_auroc(gt_pixels, score_pixels):
+def compute_pixel_auroc(gt_pixels, pixel_anomaly_scores):
     """
     Compute pixel-level AUROC (P-AUROC).
     """
-    return round(roc_auc_score(gt_pixels, score_pixels), 4)
+    return round(roc_auc_score(gt_pixels, pixel_anomaly_scores), 4)
 
 
-def compute_image_auroc(gt_images, score_images):
+def compute_image_auroc(gt_images, image_anomaly_scores):
     """
     Compute image-level AUROC (I-AUROC).
     """
-    return round(roc_auc_score(gt_images, score_images), 4)
+    return round(roc_auc_score(gt_images, image_anomaly_scores), 4)
 
 
-def compute_pro_auc(masks: ndarray, amaps: ndarray, num_th: int = 200) -> None:
+def compute_pro(anomaly_maps, ground_truth_maps):
     """
-    Compute the area under the PRO (Per-Region Overlap) curve for a single anomalous sample.
+    Source: https://www.mvtec.com/research-teaching/datasets/mvtec-ad
+    Compute the PRO curve for a set of anomaly maps with corresponding ground
+    truth maps.
 
-    PRO measures region-wise overlap between predicted anomaly maps
-    and ground truth defect regions, aggregated over multiple thresholds.
+    Args:
+        anomaly_maps: List of anomaly maps (2D numpy arrays) that contain a
+          real-valued anomaly score at each pixel.
 
-    The final AUC is computed for false positive rates up to 0.3.
+        ground_truth_maps: List of ground truth maps (2D numpy arrays) that
+          contain binary-valued ground truth labels for each pixel.
+          0 indicates that a pixel is anomaly-free.
+          1 indicates that a pixel contains an anomaly.
+
+    Returns:
+        fprs: numpy array of false positive rates.
+        pros: numpy array of corresponding PRO values.
     """
-    # Input validation
-    assert isinstance(amaps, ndarray), "type(amaps) must be ndarray"
-    assert isinstance(masks, ndarray), "type(masks) must be ndarray"
-    assert amaps.ndim == 3, "amaps.ndim must be 3 (num_test_data, h, w)"
-    assert masks.ndim == 3, "masks.ndim must be 3 (num_test_data, h, w)"
-    assert amaps.shape == masks.shape, "amaps.shape and masks.shape must be same"
-    assert set(masks.flatten()) == {0, 1}, "set(masks.flatten()) must be {0, 1}"
-    assert isinstance(num_th, int), "type(num_th) must be int"
 
-    # Storage for PRO curve values
-    records = {"pro": [], "fpr": [], "threshold": []}
-    binary_amaps = np.zeros_like(amaps, dtype=bool)
+    print("Compute PRO curve...")
 
-    # Threshold range
-    min_th, max_th = amaps.min(), amaps.max()
-    delta = (max_th - min_th) / num_th
+    # Structuring element for computing connected components.
+    structure = np.ones((3, 3), dtype=int)
 
-    for th in np.arange(min_th, max_th, delta):
-        binary_amaps[amaps <= th] = 0
-        binary_amaps[amaps > th] = 1
+    num_ok_pixels = 0
+    num_gt_regions = 0
 
-        pros = []
+    shape = (len(anomaly_maps),
+             anomaly_maps[0].shape[0],
+             anomaly_maps[0].shape[1])
+    fp_changes = np.zeros(shape, dtype=np.uint32)
+    assert shape[0] * shape[1] * shape[2] < np.iinfo(fp_changes.dtype).max, \
+        'Potential overflow when using np.cumsum(), consider using np.uint64.'
 
-        # Compute region-wise overlap
-        for binary_amap, mask in zip(binary_amaps, masks):
-            for region in measure.regionprops(measure.label(mask)):
-                axes0_ids = region.coords[:, 0]
-                axes1_ids = region.coords[:, 1]
+    pro_changes = np.zeros(shape, dtype=np.float64)
 
-                # True positive pixels inside each defect region
-                tp_pixels = binary_amap[axes0_ids, axes1_ids].sum()
-                pros.append(tp_pixels / region.area)
+    for gt_ind, gt_map in enumerate(ground_truth_maps):
 
-        # Compute false positive rate
-        inverse_masks = 1 - masks
-        fp_pixels = np.logical_and(inverse_masks, binary_amaps).sum()
-        fpr = fp_pixels / inverse_masks.sum()
+        # Compute the connected components in the ground truth map.
+        labeled, n_components = label(gt_map, structure)
+        num_gt_regions += n_components
 
-        records["pro"].append(mean(pros))
-        records["fpr"].append(fpr)
-        records["threshold"].append(th)
+        # Compute the mask that gives us all ok pixels.
+        ok_mask = labeled == 0
+        num_ok_pixels_in_map = np.sum(ok_mask)
+        num_ok_pixels += num_ok_pixels_in_map
 
-    # Restrict evaluation to low-FPR regime and normalize    
-    df = pd.DataFrame(records)
-    df = df[df["fpr"] < 0.3]
-    df["fpr"] = df["fpr"] / df["fpr"].max()
+        # Compute by how much the FPR changes when each anomaly score is
+        # added to the set of positives.
+        # fp_change needs to be normalized later when we know the final value
+        # of num_ok_pixels -> right now it is only the change in the number of
+        # false positives
+        fp_change = np.zeros_like(gt_map, dtype=fp_changes.dtype)
+        fp_change[ok_mask] = 1
 
-    pro_auc = auc(df["fpr"], df["pro"])
-    return pro_auc
+        # Compute by how much the PRO changes when each anomaly score is
+        # added to the set of positives.
+        # pro_change needs to be normalized later when we know the final value
+        # of num_gt_regions.
+        pro_change = np.zeros_like(gt_map, dtype=np.float64)
+        for k in range(n_components):
+            region_mask = labeled == (k + 1)
+            region_size = np.sum(region_mask)
+            pro_change[region_mask] = 1. / region_size
+
+        fp_changes[gt_ind, :, :] = fp_change
+        pro_changes[gt_ind, :, :] = pro_change
+
+    # Flatten the numpy arrays before sorting.
+    anomaly_scores_flat = np.array(anomaly_maps).ravel()
+    fp_changes_flat = fp_changes.ravel()
+    pro_changes_flat = pro_changes.ravel()
+
+    # Sort all anomaly scores.
+    print(f"Sort {len(anomaly_scores_flat)} anomaly scores...")
+    sort_idxs = np.argsort(anomaly_scores_flat).astype(np.uint32)[::-1]
+
+    # Info: np.take(a, ind, out=a) followed by b=a instead of
+    # b=a[ind] showed to be more memory efficient.
+    np.take(anomaly_scores_flat, sort_idxs, out=anomaly_scores_flat)
+    anomaly_scores_sorted = anomaly_scores_flat
+    np.take(fp_changes_flat, sort_idxs, out=fp_changes_flat)
+    fp_changes_sorted = fp_changes_flat
+    np.take(pro_changes_flat, sort_idxs, out=pro_changes_flat)
+    pro_changes_sorted = pro_changes_flat
+
+    del sort_idxs
+
+    # Get the (FPR, PRO) curve values.
+    np.cumsum(fp_changes_sorted, out=fp_changes_sorted)
+    fp_changes_sorted = fp_changes_sorted.astype(np.float32, copy=False)
+    np.divide(fp_changes_sorted, num_ok_pixels, out=fp_changes_sorted)
+    fprs = fp_changes_sorted
+
+    np.cumsum(pro_changes_sorted, out=pro_changes_sorted)
+    np.divide(pro_changes_sorted, num_gt_regions, out=pro_changes_sorted)
+    pros = pro_changes_sorted
+
+    # Merge (FPR, PRO) points that occur together at the same threshold.
+    # For those points, only the final (FPR, PRO) point should be kept.
+    # That is because that point is the one that takes all changes
+    # to the FPR and the PRO at the respective threshold into account.
+    # -> keep_mask is True if the subsequent score is different from the
+    # score at the respective position.
+    # anomaly_scores_sorted = [7, 4, 4, 4, 3, 1, 1]
+    # ->          keep_mask = [T, F, F, T, T, F]
+    keep_mask = np.append(np.diff(anomaly_scores_sorted) != 0, np.True_)
+    del anomaly_scores_sorted
+
+    fprs = fprs[keep_mask]
+    pros = pros[keep_mask]
+    del keep_mask
+
+    # To mitigate the adding up of numerical errors during the np.cumsum calls,
+    # make sure that the curve ends at (1, 1) and does not contain values > 1.
+    np.clip(fprs, a_min=None, a_max=1., out=fprs)
+    np.clip(pros, a_min=None, a_max=1., out=pros)
+
+    # Make the fprs and pros start at 0 and end at 1.
+    zero = np.array([0.])
+    one = np.array([1.])
+
+    return np.concatenate((zero, fprs, one)), np.concatenate((zero, pros, one))
 
 
-def compute_mean_pro_auc(pro_auc_scores):
-    """
-    Compute mean AUPRO over all anomalous samples.
-    """
-    return round(float(np.mean(pro_auc_scores)), 4)
-
-
-
-def compute_ad_metrics(dataloader, anomaly_maps):
+def compute_ad_metrics(
+    gt_pixels,
+    pixel_anomaly_scores,
+    gt_images,
+    image_anomaly_scores,
+    masks,
+    anomaly_maps,
+):
     """
     Compute standard anomaly detection metrics.
 
     Returns:
         - Pixel-level AUROC
-        - Sample-level AUROC
-        - Mean AUPRO over anomalous samples
+        - Image-level AUROC
+        - MVTec AUPRO   
     """
-    gt_list_px = []
-    pr_list_px = []
-    gt_list_sp = []
-    pr_list_sp = []
-    pro_auc_list = []
 
-    for (_, gt, label, _, _), anomaly_map in zip(dataloader, anomaly_maps):
-        # Binarize ground truth mask
-        gt[gt > 0.5] = 1
-        gt[gt <= 0.5] = 0
+    # Pixel AUROC
+    pixel_auroc = compute_pixel_auroc(gt_pixels, pixel_anomaly_scores)
 
-        # Calculate PRO score for anomalous samples
-        if label.item() != 0:
-            pro_auc_list.append(
-                compute_pro_auc(
-                    gt.squeeze(0).cpu().numpy().astype(int),
-                    anomaly_map[np.newaxis, :, :],
-                )
-            )
+    # Image AUROC
+    image_auroc = compute_image_auroc(gt_images, image_anomaly_scores)
 
-        # Collect pixel-level predictions
-        gt_list_px.extend(gt.cpu().numpy().astype(int).ravel())
-        pr_list_px.extend(anomaly_map.ravel())
+    # Convert lists to NumPy arrays for PRO computation
+    masks = np.asarray(masks)
+    anomaly_maps = np.asarray(anomaly_maps)
 
-        # Collect sample-level predictions
-        gt_list_sp.append(np.max(gt.cpu().numpy().astype(int)))
-        pr_list_sp.append(np.max(anomaly_map))
+    # Compute PRO curve
+    fprs, pros = compute_pro(
+        anomaly_maps=anomaly_maps,
+        ground_truth_maps=masks,
+    )
 
-    auroc_px = compute_pixel_auroc(gt_list_px, pr_list_px)
-    auroc_sp = compute_image_auroc(gt_list_sp, pr_list_sp)
-    mean_pro_auc = compute_mean_pro_auc(pro_auc_list)
+    # Compute AUPRO up to FPR = 0.3
+    integration_limit = 0.3
+    au_pro = trapezoid(fprs, pros, x_max=integration_limit)
 
-    return auroc_px, auroc_sp, mean_pro_auc
+    # Normalize AUPRO to [0, 1]
+    au_pro /= integration_limit
 
+    return (
+        round(pixel_auroc, 4),
+        round(image_auroc, 4),
+        round(float(au_pro), 4),
+    )

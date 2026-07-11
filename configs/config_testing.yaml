@@ -25,9 +25,8 @@ model:
       base: 64
 
 thresholds:
-  image_quantile: 0.99          # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
+  image_quantile:  0.99          # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
   image_threshold: 0.86         # Threshold applied to the image-level anomaly score for classification
-
   pixel_threshold: 0.85         # Pixel is considered anomalous above this score
   min_region_area: 6500         # Removes connected regions smaller than this area (noise filtering)
 
@@ -38,7 +37,7 @@ morphology:
   enabled: true                 # Enable/disable morphological mask cleanup
   kernel_size: 3                # Neighborhood size (3×3) used to suppress noise
   open_iterations: 1            # Strength of noise removal
-  close_iterations: 50 #20          # Strength of hole filling
+  close_iterations: 50          # Strength of hole filling
 
 dataset:
   image_size: 256

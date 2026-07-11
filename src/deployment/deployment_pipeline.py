@@ -114,7 +114,6 @@ def run_deployment(dataset_path, deploy_metadata, output_dir):
     # --------------------------------------------------
     # Switch to eval mode
     # --------------------------------------------------
-    # Freeze encoder (feature extractor is not trained)
     encoder.eval()
     proj_layer.eval()
     bn.eval()
