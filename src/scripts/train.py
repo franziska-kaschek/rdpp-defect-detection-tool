@@ -10,6 +10,7 @@ from src.utils.cli import parse_cli_args
 from src.utils.config import load_yaml_config, override
 from src.utils.reproducibility import setup_seed
 from src.training.training_pipeline import run_training
+from src.evaluation.monitoring_plots import plot_training_progress
 
 
 def main():
@@ -102,7 +103,7 @@ def main():
     print(f"Backbone        : {train_metadata['model']['backbone']}")
     print("Training running...", end=" ", flush=True)
 
-    result = run_training(train_metadata)
+    result = run_training(dataset_path, train_metadata)
 
     # --------------------------------------------------
     # IO: Training metadata
@@ -119,7 +120,7 @@ def main():
     )
     checkpoint_path = os.path.join(output_dir, checkpoint_name)
 
-    torch.save(result["best_checkpoint"], checkpoint_path)
+    torch.save(result["checkpoint_state"], checkpoint_path)
 
     # --------------------------------------------------
     # IO: Best metrics
@@ -132,6 +133,15 @@ def main():
     # --------------------------------------------------
     df = pd.DataFrame(result["eval_history"])
     df.to_csv(os.path.join(output_dir, "training_history.csv"), index=False)
+
+    # --------------------------------------------------
+    # IO: Plots
+    # --------------------------------------------------
+    plot_training_progress(
+        result["eval_history"],
+        result["best"]["epoch"],
+        output_dir,
+    )
 
     # --------------------------------------------------
     # Print summary to console
