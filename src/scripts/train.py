@@ -102,7 +102,7 @@ def main():
     print(f"Backbone        : {train_metadata['model']['backbone']}")
     print("Training running...", end=" ", flush=True)
 
-    result = run_training(dataset_path, train_metadata)
+    result = run_training(train_metadata)
 
     # --------------------------------------------------
     # IO: Training metadata
@@ -119,7 +119,7 @@ def main():
     )
     checkpoint_path = os.path.join(output_dir, checkpoint_name)
 
-    torch.save(result["checkpoint_state"], checkpoint_path)
+    torch.save(result["best_checkpoint"], checkpoint_path)
 
     # --------------------------------------------------
     # IO: Best metrics

@@ -21,7 +21,7 @@ from src.postprocessing.image_level_output import (
 from src.postprocessing.pixel_level_output import save_pixel_level_outputs
 
 
-def run_deployment(dataset_path, deploy_metadata, output_dir):
+def run_deployment(deploy_metadata, output_dir):
     """
     Deployment pipeline without ground truth.
 
