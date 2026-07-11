@@ -141,6 +141,7 @@ def run_test(test_metadata, output_dir):
     # --------------------------------------------------
     # Evaluation
     # --------------------------------------------------
+    # Collect evaluation data
     gt_pixels, pixel_anomaly_scores, masks, gt_images, image_anomaly_scores = collect_eval_data(
         test_dataloader,
         anomaly_maps
@@ -148,6 +149,7 @@ def run_test(test_metadata, output_dir):
 
     amaps = np.asarray(anomaly_maps)
 
+    # Compute anomaly detection metrics:
     pixel_auroc, image_auroc, aupro = compute_ad_metrics(
         gt_pixels,
         pixel_anomaly_scores,

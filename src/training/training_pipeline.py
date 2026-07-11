@@ -5,7 +5,10 @@ from tqdm import tqdm
 import copy
 
 from src.inference.infer_anomaly_maps import infer_anomaly_maps_from_dataset
-from src.evaluation.metrics import compute_ad_metrics
+from src.evaluation.metrics import (
+    compute_ad_metrics,
+    collect_eval_data,
+)
 from src.evaluation.noise_plots import plot_noisy_examples_grid
 from src.model.backbone_registry import BACKBONE_FNS
 from src.model.multiscale_projection_loss import (
@@ -19,7 +22,7 @@ from src.data.dataset import (
     get_data_transforms,
 )
 
-def run_training(dataset_path, train_metadata):
+def run_training(train_metadata):
     """
     Training pipeline for anomaly detection.
 
@@ -137,9 +140,9 @@ def run_training(dataset_path, train_metadata):
     }
     eval_history = {
         "epoch": [],
-        "auroc_px": [],
-        "auroc_sp": [],
-        "aupro_px": [],
+        "pixel_auroc": [],
+        "image_auroc": [],
+        "aupro": [],
         "loss_proj": [],
         "loss_distill": [],
         "total_loss": [],
@@ -237,16 +240,27 @@ def run_training(dataset_path, train_metadata):
         # --------------------------------------------------
         # Evaluation
         # --------------------------------------------------
-        auroc_px, auroc_sp, aupro_px = compute_ad_metrics(
+        # Collect evaluation data
+        gt_pixels, pixel_anomaly_scores, masks, gt_images, image_anomaly_scores = collect_eval_data(
             test_dataloader,
+            anomaly_maps,
+        )
+        
+        # Compute anomaly detection metrics:
+        pixel_auroc, image_auroc, aupro = compute_ad_metrics(
+            gt_pixels,
+            pixel_anomaly_scores,
+            gt_images,
+            image_anomaly_scores,
+            masks,
             anomaly_maps,
         )
 
         # Store eval_history
         eval_history["epoch"].append(epoch)
-        eval_history["auroc_px"].append(auroc_px)
-        eval_history["auroc_sp"].append(auroc_sp)
-        eval_history["aupro_px"].append(aupro_px)
+        eval_history["pixel_auroc"].append(pixel_auroc)
+        eval_history["image_auroc"].append(image_auroc)
+        eval_history["aupro"].append(aupro)
         eval_history["loss_proj"].append(running["loss_proj"] / len(train_dataloader))
         eval_history["loss_distill"].append(
             running["loss_distill"] / len(train_dataloader)
@@ -254,15 +268,15 @@ def run_training(dataset_path, train_metadata):
         eval_history["total_loss"].append(running["total_loss"] / len(train_dataloader))
 
         # Update best-performing model
-        score = (auroc_px + auroc_sp + aupro_px) / 3
+        score = (pixel_auroc + image_auroc + aupro) / 3
         if score > best["score"]:
             best.update(
                 {
                     "score": score,
                     "epoch": epoch,
-                    "AUROC_sample": auroc_sp,
-                    "AUROC_pixel": auroc_px,
-                    "AUPRO_pixel": aupro_px,
+                    "AUROC_sample": image_auroc,
+                    "AUROC_pixel": pixel_auroc,
+                    "AUPRO_pixel": aupro,
                 }
             )
 
