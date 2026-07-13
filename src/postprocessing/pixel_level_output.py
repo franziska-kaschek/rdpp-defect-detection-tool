@@ -183,8 +183,10 @@ def save_labelme_json(
     Save polygons in LabelMe JSON format.
     """
     # Create a list of polygon annotation entries for the JSON file
-    shapes = [
-        {
+    shapes = []
+
+    for poly in polygons:
+        shape = {
             "label": label,
             "points": poly,
             "group_id": None,
@@ -193,8 +195,8 @@ def save_labelme_json(
             "flags": {},
             "mask": None,
         }
-        for poly in polygons
-    ]
+
+        shapes.append(shape)
 
     # Build the complete LabelMe JSON structure including image metadata and annotations
     data = {
