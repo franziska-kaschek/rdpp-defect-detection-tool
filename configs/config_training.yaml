@@ -15,7 +15,7 @@ model:
   
   backbones:                      # Available backbone architectures (VRAM requirements depend on the backbone)
     resnet18:
-      base: 16                    # Base channel width; controls model width (higher = more channels)
+      base: 16                    # Base feature dimension for the projection layers (higher = more channels and VRAM)
     resnet34:
       base: 16
     resnet50:
