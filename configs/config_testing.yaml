@@ -7,9 +7,9 @@ project:
   device: cuda                  # Use "cuda" for GPU, or "cpu" for CPU
 
 paths:
-  dataset: ./datasets/dataset_test2
+  dataset: ./datasets/dataset_test2 # Path to dataset used for evaluation
   output_root: ./output
-  checkpoint_path: ./output/training/2026-07-04_01-38-16/dataset_val/best_model_resnet34_dataset_val.pth
+  checkpoint_path: ./output/training/2026-07-12_01-50-35/dataset_val/best_model_resnet34_dataset_val.pth
 
 model:
   backbone: resnet34            # Selected backbone model. The backbone must match the one used during training of the checkpoint!
@@ -26,8 +26,8 @@ model:
 
 thresholds:
   image_quantile:  0.99          # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
-  image_threshold: 0.86         # Threshold applied to the image-level anomaly score for classification
-  pixel_threshold: 0.85         # Pixel is considered anomalous above this score
+  image_threshold: 0.66         # Threshold applied to the image-level anomaly score for classification
+  pixel_threshold: 0.72         # Pixel is considered anomalous above this score
   min_region_area: 6500         # Removes connected regions smaller than this area (noise filtering)
 
 polygon:
@@ -36,7 +36,7 @@ polygon:
 morphology:
   enabled: true                 # Enable/disable morphological mask cleanup
   kernel_size: 3                # Neighborhood size (3×3) used to suppress noise
-  open_iterations: 1            # Strength of noise removal
+  open_iterations: 0            # Strength of noise removal and mask smoothing
   close_iterations: 50          # Strength of hole filling
 
 dataset:
