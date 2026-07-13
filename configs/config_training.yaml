@@ -13,7 +13,7 @@ paths:
 model:
   backbone: resnet34              # Selected backbone model
   
-  backbones:                      # Available backbone architectures (VRAM requirements depend on the backbone)
+  backbones:                      # Available backbone architectures and their projection settings (VRAM requirements depend on the backbone)
     resnet18:
       base: 16                    # Base feature dimension for the projection layers (higher = more channels and VRAM)
     resnet34:
