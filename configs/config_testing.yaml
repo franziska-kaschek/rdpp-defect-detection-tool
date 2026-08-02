@@ -7,7 +7,7 @@ project:
   device: cuda                  # Use "cuda" for GPU, or "cpu" for CPU
 
 paths:
-  dataset: ./datasets/dataset_test2 # Path to dataset used for evaluation
+  dataset: ./datasets/dataset_test1 # Path to dataset used for evaluation
   output_root: ./output
   checkpoint_path: ./output/training/2026-07-12_01-50-35/dataset_val/best_model_resnet34_dataset_val.pth
 
@@ -25,7 +25,7 @@ model:
       base: 64
 
 thresholds:
-  image_quantile:  0.99          # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
+  image_quantile:  0.99         # Sets a threshold so that a chosen percentage of pixel anomaly scores lies below it, reducing the impact of isolated extreme values
   image_threshold: 0.66         # Threshold applied to the image-level anomaly score for classification
   pixel_threshold: 0.72         # Pixel is considered anomalous above this score
   min_region_area: 6500         # Removes connected regions smaller than this area (noise filtering)

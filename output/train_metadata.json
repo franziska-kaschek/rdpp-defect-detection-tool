@@ -1,18 +1,18 @@
 {
-  "python_version": "3.10.12 (main, Mar  3 2026, 11:56:32) [GCC 11.4.0]",
+  "python_version": "3.10.12 (main, Jun 22 2026, 18:55:27) [GCC 11.4.0]",
   "torch_version": "1.12.1+cu113",
   "device": "cuda",
   "seed": 42,
   "run": {
-    "dataset": "shearography_val"
+    "dataset": "dataset_val"
   },
   "paths": {
-    "dataset": "./datasets/shearography_val",
-    "output_dir": "./output/training/2026-04-28_17-17-37/shearography_val"
+    "dataset": "./datasets/dataset_val",
+    "output_dir": "./output/training/2026-07-12_01-50-35/dataset_val"
   },
   "dataset": {
     "image_size": 256,
-    "num_train_images": 3750
+    "num_train_images": 4320
   },
   "model": {
     "backbone": "resnet34",

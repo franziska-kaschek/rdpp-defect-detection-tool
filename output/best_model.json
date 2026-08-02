@@ -1,7 +1,7 @@
 {
-  "epoch": 1,
-  "score": 0.9725,
-  "AUROC_sample": 0.9975,
-  "AUROC_pixel": 0.9831,
-  "AUPRO_pixel": 0.9369
+  "epoch": 3,
+  "score": 0.9851333333333333,
+  "AUROC_sample": 0.9998,
+  "AUROC_pixel": 0.9892,
+  "AUPRO_pixel": 0.9664
 }
