@@ -167,7 +167,7 @@ datasets/
 
 ### Sample Images and Ground-Truth Masks
 Representative samples of normal images, faulty images and corresponding
-ground-truth masks. Image rights: Tenta Vision GmbH
+ground-truth masks. Image rights: Plassmann et al., https://zenodo.org/records/17631257
 
 <table>
   <tr>
